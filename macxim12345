@@ -6,89 +6,65 @@
     <title>Карта объявлений</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        /* Убираем все отступы и делаем так, чтобы карта занимала 100% экрана */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Прячем возможную прокрутку */
-        }
-        #map {
-            height: 100%;
-            width: 100%;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+        #map { height: 100%; width: 100%; }
     </style>
 </head>
 <body>
-
     <div id="map"></div>
-
     <script>
-        // Весь наш код будет внутри этой функции, чтобы он запускался после загрузки страницы
         document.addEventListener('DOMContentLoaded', function () {
-            // Инициализируем Web App API
             const tg = window.Telegram.WebApp;
-            tg.ready(); // Сообщаем Telegram, что наше приложение готово к отображению
+            tg.ready();
 
-            // --- ВАЖНО: ДАННЫЕ ОТ БОТА ---
-            // Пока что, для теста, мы используем "зашитые" данные.
-            // На следующем шаге мы заменим это на получение реальных данных от бота.
+            // --- ОБНОВЛЕННАЯ ЛОГИКА ПОЛУЧЕНИЯ ДАННЫХ ---
             function getAdsData() {
                 try {
-                    // Создаем объект для работы с параметрами URL
                     const urlParams = new URLSearchParams(window.location.search);
-                    // Ищем параметр 'data'
                     if (urlParams.has('data')) {
-                        // Если он есть, декодируем его и превращаем из строки JSON в объект JavaScript
+                        // Если бот прислал данные - используем их
                         return JSON.parse(decodeURIComponent(urlParams.get('data')));
                     }
-                    // Если параметра нет, возвращаем пустой массив
-                    return [];
                 } catch (error) {
-                    console.error("Ошибка при получении данных из URL:", error);
-                    return [];
+                    console.error("Ошибка при получении данных от бота:", error);
                 }
+                
+                // Если данных от бота нет (открыли ссылку напрямую) - ПОКАЗЫВАЕМ ТЕСТОВЫЕ ДАННЫЕ
+                console.log("Данные от бота не найдены. Используются тестовые данные.");
+                return [
+                    { "title": "Тестовая 1-комн. квартира (Харьков)", "price": "8500 грн", "lat": 49.9935, "lon": 36.2304 },
+                    { "title": "Тестовый дом у парка (Харьков)", "price": "20000 грн", "lat": 50.005, "lon": 36.240 }
+                ];
             }
 
             const adsData = getAdsData();
             // ------------------------------------
 
-            // Проверяем, есть ли вообще данные для отображения
             if (!adsData || adsData.length === 0) {
-                // Если данных нет, показываем сообщение и не инициализируем карту
                 document.getElementById('map').innerHTML = '<h3 style="text-align: center; padding-top: 20px;">Объявлений для отображения не найдено.</h3>';
                 return;
             }
 
-            // Инициализируем карту Leaflet и центрируем ее на первом объявлении в списке
             const map = L.map('map').setView([adsData[0].lat, adsData[0].lon], 13);
 
-            // Добавляем "подложку" карты. Используем OpenStreetMap - это бесплатный сервис.
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // Теперь проходим по каждому объявлению в наших данных
+            const markers = [];
             adsData.forEach(ad => {
-                // Создаем маркер (отметку) на карте по координатам
-                const marker = L.marker([ad.lat, ad.lon]).addTo(map);
-                
-                // К каждому маркеру "привязываем" всплывающее окошко с информацией
+                const marker = L.marker([ad.lat, ad.lon]);
                 marker.bindPopup(`<b>${ad.title}</b><br>${ad.price}`);
+                markers.push(marker);
             });
             
-            // Расширяем видимую область карты, чтобы все маркеры поместились на экране
-            const group = new L.featureGroup(adsData.map(ad => L.marker([ad.lat, ad.lon])));
+            const group = new L.featureGroup(markers).addTo(map);
             map.fitBounds(group.getBounds().pad(0.5));
         });
     </script>
-
 </body>
 </html>
