@@ -40,10 +40,24 @@
             // --- ВАЖНО: ДАННЫЕ ОТ БОТА ---
             // Пока что, для теста, мы используем "зашитые" данные.
             // На следующем шаге мы заменим это на получение реальных данных от бота.
-            const adsData = [
-                { "title": "Тестовая 1-комн. квартира", "price": "8500 грн", "lat": 49.9935, "lon": 36.2304 },
-                { "title": "Тестовый дом у парка", "price": "20000 грн", "lat": 50.005, "lon": 36.240 }
-            ];
+            function getAdsData() {
+                try {
+                    // Создаем объект для работы с параметрами URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    // Ищем параметр 'data'
+                    if (urlParams.has('data')) {
+                        // Если он есть, декодируем его и превращаем из строки JSON в объект JavaScript
+                        return JSON.parse(decodeURIComponent(urlParams.get('data')));
+                    }
+                    // Если параметра нет, возвращаем пустой массив
+                    return [];
+                } catch (error) {
+                    console.error("Ошибка при получении данных из URL:", error);
+                    return [];
+                }
+            }
+
+            const adsData = getAdsData();
             // ------------------------------------
 
             // Проверяем, есть ли вообще данные для отображения
