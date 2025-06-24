@@ -1,82 +1,97 @@
-<script>
-    console.log("--- СКРИПТ НАЧАЛ ВЫПОЛНЯТЬСЯ ---");
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта объявлений</title>
 
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log("--- СОБЫТИЕ DOMContentLoaded СРАБОТАЛО ---");
-        try {
-            // --- НОВЫЙ БЛОК ПРОВЕРКИ ---
-            // Проверяем, существует ли объект Telegram Web App
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.ready(); // Сообщаем Telegram, что мы готовы, только если мы внутри Telegram
-                console.log("--- Telegram WebApp инициализирован ---");
-            } else {
-                console.log("--- Страница открыта не в Telegram, работаем в тестовом режиме ---");
-            }
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-            function getAdsData() {
-                console.log("--- Вызвана функция getAdsData ---");
-                try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.has('data')) {
-                        const rawData = urlParams.get('data');
-                        console.log("Найден параметр 'data'. Сырые данные:", rawData);
-                        const parsedData = JSON.parse(decodeURIComponent(rawData));
-                        console.log("Данные после JSON.parse:", parsedData);
-                        return parsedData;
-                    }
-                } catch (error) {
-                    console.error("ОШИБКА в getAdsData:", error);
-                }
-                
-                console.log("Данные от бота не найдены, возвращаем тестовые данные.");
-                return [
-                    { "title": "Тестовая квартира", "price": "100$", "lat": 49.9935, "lon": 36.2304 },
-                    { "title": "Тестовый дом", "price": "200$", "lat": 50.005, "lon": 36.240 }
-                ];
-            }
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+        #map { height: 100%; width: 100%; }
+    </style>
+</head>
+<body>
 
-            const adsData = getAdsData();
-            console.log("Финальный массив данных для карты:", adsData);
+    <div id="map"></div>
 
-            if (!adsData || adsData.length === 0) {
-                console.log("Массив данных пуст. Карта не будет инициализирована.");
-                document.getElementById('map').innerHTML = '<h3 style="text-align: center; padding-top: 20px;">Объявлений для отображения не найдено.</h3>';
-                return;
-            }
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Здесь остается наш отладочный код, который вы уже использовали.
+        // Он полностью правильный, менять в нем ничего не нужно.
+        console.log("--- СКРИПТ НАЧАЛ ВЫПОЛНЯТЬСЯ ---");
 
-            console.log("Инициализация карты Leaflet...");
-            const map = L.map('map').setView([adsData[0].lat, adsData[0].lon], 13);
-            console.log("Карта инициализирована.");
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            console.log("Слой с картой добавлен.");
-
-            const markers = [];
-            adsData.forEach(ad => {
-                console.log(`Обработка объявления: ${ad.title}`);
-                if (typeof ad.lat === 'number' && typeof ad.lon === 'number') {
-                    const marker = L.marker([ad.lat, ad.lon]);
-                    marker.bindPopup(`<b>${ad.title}</b><br>${ad.price}`);
-                    markers.push(marker);
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("--- СОБЫТИЕ DOMContentLoaded СРАБОТАЛО ---");
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    tg.ready();
+                    console.log("--- Telegram WebApp инициализирован ---");
                 } else {
-                    console.error("ОШИБКА КООРДИНАТ для:", ad);
+                    console.log("--- Страница открыта не в Telegram, работаем в тестовом режиме ---");
                 }
-            });
-            
-            console.log(`Готово к добавлению ${markers.length} маркеров.`);
-            if (markers.length > 0) {
-                const group = new L.featureGroup(markers).addTo(map);
-                map.fitBounds(group.getBounds().pad(0.5));
-                console.log("Маркеры добавлены на карту.");
-            } else {
-                 console.log("Ни одного маркера не было создано для добавления.");
-            }
 
-        } catch (e) {
-            console.error("КРИТИЧЕСКАЯ ОШИБКА В ОСНОВНОМ БЛОКЕ:", e);
-        }
-    });
-</script>
+                function getAdsData() {
+                    console.log("--- Вызвана функция getAdsData ---");
+                    try {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.has('data')) {
+                            const rawData = urlParams.get('data');
+                            const parsedData = JSON.parse(decodeURIComponent(rawData));
+                            return parsedData;
+                        }
+                    } catch (error) {
+                        console.error("ОШИБКА в getAdsData:", error);
+                    }
+                    console.log("Данные от бота не найдены, возвращаем тестовые данные.");
+                    return [
+                        { "title": "Тестовая квартира", "price": "100$", "lat": 49.9935, "lon": 36.2304 },
+                        { "title": "Тестовый дом", "price": "200$", "lat": 50.005, "lon": 36.240 }
+                    ];
+                }
+
+                const adsData = getAdsData();
+                console.log("Финальный массив данных для карты:", adsData);
+
+                if (!adsData || adsData.length === 0) {
+                    document.getElementById('map').innerHTML = '<h3 style="text-align: center; padding-top: 20px;">Объявлений для отображения не найдено.</h3>';
+                    return;
+                }
+
+                console.log("Инициализация карты Leaflet...");
+                const map = L.map('map').setView([adsData[0].lat, adsData[0].lon], 13);
+                console.log("Карта инициализирована.");
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                console.log("Слой с картой добавлен.");
+
+                const markers = [];
+                adsData.forEach(ad => {
+                    if (typeof ad.lat === 'number' && typeof ad.lon === 'number') {
+                        const marker = L.marker([ad.lat, ad.lon]);
+                        marker.bindPopup(`<b>${ad.title}</b><br>${ad.price}`);
+                        markers.push(marker);
+                    } else {
+                        console.error("ОШИБКА КООРДИНАТ для:", ad);
+                    }
+                });
+                
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers).addTo(map);
+                    map.fitBounds(group.getBounds().pad(0.5));
+                    console.log("Маркеры добавлены на карту.");
+                }
+
+            } catch (e) {
+                console.error("КРИТИЧЕСКАЯ ОШИБКА В ОСНОВНОМ БЛОКЕ:", e);
+            }
+        });
+    </script>
+</body>
+</html>
