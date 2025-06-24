@@ -1,19 +1,23 @@
 <script>
-    // САМЫЙ ПЕРВЫЙ ТЕСТ: Проверяем, что скрипт вообще запускается
     console.log("--- СКРИПТ НАЧАЛ ВЫПОЛНЯТЬСЯ ---");
 
     document.addEventListener('DOMContentLoaded', function () {
         console.log("--- СОБЫТИЕ DOMContentLoaded СРАБОТАЛО ---");
         try {
-            const tg = window.Telegram.WebApp;
-            tg.ready();
-            console.log("--- Telegram WebApp готов ---");
+            // --- НОВЫЙ БЛОК ПРОВЕРКИ ---
+            // Проверяем, существует ли объект Telegram Web App
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready(); // Сообщаем Telegram, что мы готовы, только если мы внутри Telegram
+                console.log("--- Telegram WebApp инициализирован ---");
+            } else {
+                console.log("--- Страница открыта не в Telegram, работаем в тестовом режиме ---");
+            }
 
             function getAdsData() {
                 console.log("--- Вызвана функция getAdsData ---");
                 try {
                     const urlParams = new URLSearchParams(window.location.search);
-                    console.log("Параметры URL:", window.location.search);
                     if (urlParams.has('data')) {
                         const rawData = urlParams.get('data');
                         console.log("Найден параметр 'data'. Сырые данные:", rawData);
@@ -42,12 +46,6 @@
             }
 
             console.log("Инициализация карты Leaflet...");
-            // Проверяем наличие L
-            if (typeof L === 'undefined') {
-                console.error("ОШИБКА: Библиотека Leaflet (L) не найдена!");
-                return;
-            }
-
             const map = L.map('map').setView([adsData[0].lat, adsData[0].lon], 13);
             console.log("Карта инициализирована.");
 
