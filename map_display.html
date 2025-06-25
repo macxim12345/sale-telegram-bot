@@ -58,19 +58,13 @@
                 if (typeof ad.lat === 'number' && typeof ad.lon === 'number') {
                     const marker = L.marker([ad.lat, ad.lon]);
                     
-                    // --- НОВЫЙ POPUP СПЕЦИАЛЬНО ДЛЯ НЕДВИЖИМОСТИ ---
+                    // --- ТЕПЕРЬ POPUP ФОРМИРУЕТСЯ ОЧЕНЬ ПРОСТО ---
+                    // Он просто берет готовый HTML от бота
                     let popupContent = `<b>${ad.title}</b><br><b>Цена: ${ad.price}</b>`;
-                    
-                    if (ad.rooms) {
-                        popupContent += `<br>Комнат: ${ad.rooms}`;
+                    if (ad.details) {
+                        popupContent += ad.details; // Просто добавляем готовую строку
                     }
-                    if (ad.area) {
-                        popupContent += `<br>Площадь: ${ad.area} м²`;
-                    }
-                    if (ad.floor && ad.total_floors) {
-                        popupContent += `<br>Этаж: ${ad.floor} из ${ad.total_floors}`;
-                    }
-                    // ----------------------------------------------------
+                    // ------------------------------------------------
 
                     marker.bindPopup(popupContent);
                     markers.push(marker);
