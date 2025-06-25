@@ -60,9 +60,13 @@
                     
                     // --- ТЕПЕРЬ POPUP ФОРМИРУЕТСЯ ОЧЕНЬ ПРОСТО ---
                     // Он просто берет готовый HTML от бота
-                    let popupContent = `<b>${ad.title}</b><br><b>Цена: ${ad.price}</b>`;
+                    const title = ad.title ? ad.title : 'Объявление';
+                    
+                    // Формируем контент, используя нашу новую переменную title
+                    let popupContent = `<b>${title}</b><br><b>Цена: ${ad.price}</b>`;
+                    
                     if (ad.details) {
-                        popupContent += ad.details; // Просто добавляем готовую строку
+                        popupContent += ad.details;
                     }
                     // ------------------------------------------------
 
