@@ -43,7 +43,7 @@
             const adsData = getAdsData();
 
             if (!adsData || adsData.length === 0) {
-                document.getElementById('map').innerHTML = '<h3 style="text-align: center; padding-top: 20px;">Объектов недвижимости для отображения не найдено.</h3>';
+                document.getElementById('map').innerHTML = '<h3 style="text-align: center; padding-top: 20px;">Объектов для отображения не найдено.</h3>';
                 return;
             }
 
@@ -58,17 +58,13 @@
                 if (typeof ad.lat === 'number' && typeof ad.lon === 'number') {
                     const marker = L.marker([ad.lat, ad.lon]);
                     
-                    // --- ТЕПЕРЬ POPUP ФОРМИРУЕТСЯ ОЧЕНЬ ПРОСТО ---
-                    // Он просто берет готовый HTML от бота
                     const title = ad.title ? ad.title : 'Объявление';
-                    
-                    // Формируем контент, используя нашу новую переменную title
                     let popupContent = `<b>${title}</b><br><b>Цена: ${ad.price}</b>`;
                     
+                    // Просто добавляем готовую строку с деталями от бота
                     if (ad.details) {
                         popupContent += ad.details;
                     }
-                    // ------------------------------------------------
 
                     marker.bindPopup(popupContent);
                     markers.push(marker);
